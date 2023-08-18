@@ -37,9 +37,21 @@ std::string addrstr(address addr) {
 }
 
 // convert string into address 
-address straddr(std::string addr) {
-    // TODO
-    return 123;
+address straddr(std::string str) {
+    address octet_mask[4] = {FIRST_OCTET, SECOND_OCTET, THIRD_OCTET, FOURTH_OCTET};
+
+    address result = 0;
+    int octets[4];
+
+    sscanf(str.c_str(), "%d.%d.%d.%d", &octets[0], &octets[1], &octets[2], &octets[3]);
+
+    // j is to loop through octects backwards so theyre in the right order
+    for (int i = 0, j = 3; i < 4; i++, j--) {
+        address octet = octets[j] << i * 8;
+        result |= octet;
+    }
+
+    return result;
 }
 
 // get minimum host number
@@ -52,10 +64,21 @@ address getHostMax(address broadcast) {
     return broadcast - 1;
 }
 
-int main() {
+int main(int argc, char *argv[]) {
+    if (argc != 3) {
+        std::cout << "Usage: " << argv[0] << " address netmask" << '\n';
+        return -1;
+    }
+
+    address addr = straddr(std::string(argv[1]));
+    address netmask = straddr(std::string(argv[2]));
+
+    std::cout << addrstr(addr) << '\n';
+    std::cout << addrstr(netmask) << '\n';
+
     // hardcoded for now
-    address addr    = 0b11000000101010000000000010011010; // 192.168.0.154
-    address netmask = 0b11111111111111111111111100000000; // 255.255.255.0 (/24)
+    // address addr    = 0b11000000101010000000000010011010; // 192.168.0.154
+    // address netmask = 0b11111111111111111111111100000000; // 255.255.255.0 (/24)
 
     // number of hosts that can be on a network
     int numberofhosts = std::pow(2, countbits(~netmask)) - 2;
